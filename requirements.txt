@@ -6,8 +6,3 @@ shroomdk
 seaborn
 plotly
 requests
-defaultdict
-collections
-csv
-json
-io
