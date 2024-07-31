@@ -130,11 +130,11 @@ if json_file and csv_file:
         csv_comparison_table, json_comparison_table = process_files(json_file, csv_file)
 
         # Display CSV-based comparison table
-        st.header("CSV-based Comparison Table")
-        csv_df = pd.DataFrame(csv_comparison_table, columns=["Taker", "Maker", "Ticker", "Volume (CSV)", "Volume USD (CSV)", "Volume (JSON)"])
+        st.header("Block Proposer-based Comparison Table")
+        csv_df = pd.DataFrame(csv_comparison_table, columns=["Taker", "Maker", "Ticker", "Volume (BP)", "Volume USD (BP)", "Volume (NODE)"])
         st.dataframe(csv_df)
 
         # Display JSON-based comparison table
-        st.header("JSON-based Comparison Table")
-        json_df = pd.DataFrame(json_comparison_table, columns=["Taker", "Maker", "Ticker", "Volume (JSON)", "Volume (CSV)", "Volume USD (CSV)"])
+        st.header("NODE-based Comparison Table")
+        json_df = pd.DataFrame(json_comparison_table, columns=["Taker", "Maker", "Ticker", "Volume (NODE)", "Volume (BP)", "Volume USD (BP)"])
         st.dataframe(json_df)
