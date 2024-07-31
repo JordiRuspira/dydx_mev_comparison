@@ -1,0 +1,12 @@
+altair
+pandas
+streamlit
+watchdog
+shroomdk
+seaborn
+plotly
+requests
+collections
+csv
+json
+io
