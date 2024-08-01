@@ -33,6 +33,27 @@ def process_files(json_file, csv_file):
             "quantumConversionExponent": market_info["quantumConversionExponent"],
         }
 
+    # Create a dictionary to map clob_id to subticks from clob_mid_prices
+    clob_mid_prices = data.get("mev_node_to_node", {}).get("clob_mid_prices", [])
+    clob_id_to_subticks = {item["clob_pair"]["id"]: item["subticks"] for item in clob_mid_prices}
+
+    def get_market_data(clob_id, clob_id_to_market):
+        str_clob_id = str(clob_id)  # Convert the clob_id to string
+        if str_clob_id in clob_id_to_market:
+            ticker = clob_id_to_market[str_clob_id]['ticker']
+            atomicResolution = clob_id_to_market[str_clob_id]['atomicResolution']
+            quantumConversionExponent = clob_id_to_market[str_clob_id]['quantumConversionExponent']
+            return ticker, atomicResolution, quantumConversionExponent
+        else:
+            return None, None, None
+
+    def get_subticks(clob_id, clob_id_to_subticks, atomic_resolution):
+        if clob_id in clob_id_to_subticks:
+            subticks = clob_id_to_subticks[clob_id]
+            adjusted_subticks = subticks / (10 ** abs(atomic_resolution))
+            return adjusted_subticks
+        return "N/A"
+
     # Initialize a dictionary to store the sum of fill_amount for each taker, maker, and clob_id
     owner_fill_amounts = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
 
@@ -48,16 +69,6 @@ def process_files(json_file, csv_file):
 
         # Sum the fill_amount for each combination of taker, maker, and clob_id
         owner_fill_amounts[taker_owner][maker_owner][clob_pair_id] += fill_amount
-
-    def get_market_data(clob_id, clob_id_to_market):
-        str_clob_id = str(clob_id)  # Convert the clob_id to string
-        if str_clob_id in clob_id_to_market:
-            ticker = clob_id_to_market[str_clob_id]['ticker']
-            atomicResolution = clob_id_to_market[str_clob_id]['atomicResolution']
-            quantumConversionExponent = clob_id_to_market[str_clob_id]['quantumConversionExponent']
-            return ticker, atomicResolution, quantumConversionExponent
-        else:
-            return None, None, None
 
     clob_ids_as_strings = list(clob_id_to_market.keys())
     clob_ids_as_integers = [int(clob_id) for clob_id in clob_ids_as_strings]
@@ -116,25 +127,8 @@ def process_files(json_file, csv_file):
         volume, volume_usd = csv_data
         json_comparison_table.append((taker, maker, ticker, volume_json, volume, volume_usd))
 
-    return csv_comparison_table, json_comparison_table
-
-# Streamlit app
-st.title("CSV and JSON Comparison Tool")
-
-# File upload
-json_file = st.file_uploader("Upload JSON file", type=["json"])
-csv_file = st.file_uploader("Upload CSV file", type=["csv"])
-
-if json_file and csv_file:
-    if st.button("Compare"):
-        csv_comparison_table, json_comparison_table = process_files(json_file, csv_file)
-
-        # Display CSV-based comparison table
-        st.header("Block Proposer-based Comparison Table")
-        csv_df = pd.DataFrame(csv_comparison_table, columns=["Taker", "Maker", "Ticker", "Volume (BP)", "Volume USD (BP)", "Volume (NODE)"])
-        st.dataframe(csv_df)
-
-        # Display JSON-based comparison table
-        st.header("NODE-based Comparison Table")
-        json_df = pd.DataFrame(json_comparison_table, columns=["Taker", "Maker", "Ticker", "Volume (NODE)", "Volume (BP)", "Volume USD (BP)"])
-        st.dataframe(json_df)
+    # Create the third table for validator_mev_matches
+    validator_mev_matches_table = []
+    for match in matches:
+        taker_owner = match["taker_order_subaccount_id"]["owner"]
+        maker_owner = match["maker_order_subaccount_id"]["owner"]
