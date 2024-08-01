@@ -46,7 +46,8 @@ def process_files(json_file, csv_file=None):
                 quantumConversionExponent = clob_id_to_market[str_clob_id]['quantumConversionExponent']
                 return ticker, atomicResolution, quantumConversionExponent
             else:
-                return None, None, None
+                # Handle cases where clob_id is missing or invalid
+                return "Unknown", 0, 0
 
         clob_ids_as_strings = list(clob_id_to_market.keys())
         clob_ids_as_integers = [int(clob_id) for clob_id in clob_ids_as_strings]
@@ -58,7 +59,7 @@ def process_files(json_file, csv_file=None):
         for match in matches:
             taker_owner = match["taker_order_subaccount_id"]["owner"]
             maker_owner = match["maker_order_subaccount_id"]["owner"]
-            clob_pair_id = match["clob_pair_id"]
+            clob_pair_id = match.get("clob_pair_id", 0)  # Default to 0 if missing
             fill_amount = match["fill_amount"]
 
             if clob_pair_id in clob_ids_as_integers:
@@ -98,7 +99,7 @@ def process_files(json_file, csv_file=None):
         for match in matches:
             taker_owner = match["taker_order_subaccount_id"]["owner"]
             maker_owner = match["maker_order_subaccount_id"]["owner"]
-            clob_pair_id = match["clob_pair_id"]
+            clob_pair_id = match.get("clob_pair_id", 0)  # Default to 0 if missing
             fill_amount = match["fill_amount"]
             ticker, atomicResolution, quantumConversionExponent = get_market_data(clob_pair_id, clob_id_to_market)
             adjusted_fill_amount = fill_amount / (10 ** abs(atomicResolution))
@@ -114,7 +115,7 @@ def process_files(json_file, csv_file=None):
         for match in bp_mev_matches:
             taker_owner = match["taker_order_subaccount_id"]["owner"]
             maker_owner = match["maker_order_subaccount_id"]["owner"]
-            clob_pair_id = match["clob_pair_id"]
+            clob_pair_id = match.get("clob_pair_id", 0)  # Default to 0 if missing
             fill_amount = match["fill_amount"]
             ticker, atomicResolution, quantumConversionExponent = get_market_data(clob_pair_id, clob_id_to_market)
             adjusted_fill_amount = fill_amount / (10 ** abs(atomicResolution))
@@ -165,5 +166,4 @@ if json_file:
             bp_mev_df = pd.DataFrame(bp_mev_table, columns=["Taker", "Maker", "Ticker", "Adjusted Fill Amount", "Price (USD)", "Volume (USD)"])
             bp_mev_df_display = bp_mev_df.copy()
             bp_mev_df_display["Price (USD)"] = bp_mev_df["Price (USD)"].apply(lambda x: f"${x:,.8f}")
-            bp_mev_df_display["Volume (USD)"] = bp_mev_df["Volume (USD)"].apply(lambda x: f"${x:,.2f}")
-            st.dataframe(bp_mev_df_display)
+            bp_mev_df_display["Volume (USD)"] = bp_mev_df["Volume (USD)
