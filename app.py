@@ -145,26 +145,34 @@ if json_file:
             st.header("CSV-based Comparison Table")
             if csv_comparison_table:
                 csv_df = pd.DataFrame(csv_comparison_table, columns=["Taker", "Maker", "Ticker", "Volume (CSV)", "Volume USD (CSV)"])
+                csv_df["Volume (CSV)"] = pd.to_numeric(csv_df["Volume (CSV)"], errors='coerce')
+                csv_df["Volume USD (CSV)"] = pd.to_numeric(csv_df["Volume USD (CSV)"], errors='coerce')
                 csv_df["Price (USD)"] = csv_df["Volume USD (CSV)"] / csv_df["Volume (CSV)"]
                 csv_df_display = csv_df.copy()
                 csv_df_display["Volume USD (CSV)"] = csv_df["Volume USD (CSV)"].apply(lambda x: f"${x:,.2f}")
                 csv_df_display["Price (USD)"] = csv_df["Price (USD)"].apply(lambda x: f"${x:,.2f}")
-                st.dataframe(csv_df_display)
+                st.dataframe(csv_df_display.sort_values(by="Volume (CSV)", ascending=False))
 
         # Display Validator MEV Matches table
         st.header("Validator MEV Matches Table")
         if validator_mev_table:
             validator_mev_df = pd.DataFrame(validator_mev_table, columns=["Taker", "Maker", "Ticker", "Adjusted Fill Amount", "Price (USD)", "Volume (USD)"])
+            validator_mev_df["Adjusted Fill Amount"] = pd.to_numeric(validator_mev_df["Adjusted Fill Amount"], errors='coerce')
+            validator_mev_df["Price (USD)"] = pd.to_numeric(validator_mev_df["Price (USD)"], errors='coerce')
+            validator_mev_df["Volume (USD)"] = pd.to_numeric(validator_mev_df["Volume (USD)"], errors='coerce')
             validator_mev_df_display = validator_mev_df.copy()
             validator_mev_df_display["Price (USD)"] = validator_mev_df["Price (USD)"].apply(lambda x: f"${x:,.8f}")
             validator_mev_df_display["Volume (USD)"] = validator_mev_df["Volume (USD)"].apply(lambda x: f"${x:,.2f}")
-            st.dataframe(validator_mev_df_display)
+            st.dataframe(validator_mev_df_display.sort_values(by="Volume (USD)", ascending=False))
 
         # Display BP MEV Matches table
         st.header("BP MEV Matches Table")
         if bp_mev_table:
             bp_mev_df = pd.DataFrame(bp_mev_table, columns=["Taker", "Maker", "Ticker", "Adjusted Fill Amount", "Price (USD)", "Volume (USD)"])
+            bp_mev_df["Adjusted Fill Amount"] = pd.to_numeric(bp_mev_df["Adjusted Fill Amount"], errors='coerce')
+            bp_mev_df["Price (USD)"] = pd.to_numeric(bp_mev_df["Price (USD)"], errors='coerce')
+            bp_mev_df["Volume (USD)"] = pd.to_numeric(bp_mev_df["Volume (USD)"], errors='coerce')
             bp_mev_df_display = bp_mev_df.copy()
             bp_mev_df_display["Price (USD)"] = bp_mev_df["Price (USD)"].apply(lambda x: f"${x:,.8f}")
             bp_mev_df_display["Volume (USD)"] = bp_mev_df["Volume (USD)"].apply(lambda x: f"${x:,.2f}")
-            st.dataframe(bp_mev_df_display)
+            st.dataframe(bp_mev_df_display.sort_values(by="Volume (USD)", ascending=False))
