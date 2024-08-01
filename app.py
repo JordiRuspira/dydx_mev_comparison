@@ -166,4 +166,5 @@ if json_file:
             bp_mev_df = pd.DataFrame(bp_mev_table, columns=["Taker", "Maker", "Ticker", "Adjusted Fill Amount", "Price (USD)", "Volume (USD)"])
             bp_mev_df_display = bp_mev_df.copy()
             bp_mev_df_display["Price (USD)"] = bp_mev_df["Price (USD)"].apply(lambda x: f"${x:,.8f}")
-            bp_mev_df_display["Volume (USD)"] = bp_mev_df["Volume (USD)
+            bp_mev_df_display["Volume (USD)"] = bp_mev_df["Volume (USD)"].apply(lambda x: f"${x:,.2f}")
+            st.dataframe(bp_mev_df_display)
